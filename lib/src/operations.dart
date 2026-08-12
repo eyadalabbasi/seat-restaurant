@@ -38,6 +38,7 @@ class ApiRestaurantRepository implements RestaurantRepository {
   Options get _auth =>
       Options(headers: {'Authorization': 'Bearer ${_token ?? ''}'});
   String? _token;
+  StaffRole _role = StaffRole.host;
   Never _fail(Object error) {
     if (error is DioException) {
       final data = error.response?.data;
@@ -54,16 +55,28 @@ class ApiRestaurantRepository implements RestaurantRepository {
   @override
   Future<StaffSession> login(String phone, String otp) async {
     try {
-      final r = await _dio.post(
-        '/api/v1/auth/verify-otp',
-        data: {'phone': phone, 'otp': otp},
+      final challenge = await _dio.post(
+        '/api/v1/auth/otp/request',
+        data: {'phone': phone, 'purpose': 'LOGIN'},
       );
-      _token = r.data['accessToken'] as String;
+      final challengeData = challenge.data['data'] as Map<String, dynamic>;
+      final r = await _dio.post(
+        '/api/v1/auth/otp/verify',
+        data: {
+          'challengeId': challengeData['challengeId'],
+          'code': otp,
+          'identityType': 'restaurant_staff',
+        },
+      );
+      final data = r.data['data'] as Map<String, dynamic>;
+      final tokens = data['tokens'] as Map<String, dynamic>;
+      _token = tokens['accessToken'] as String;
       await _storage.write(key: 'accessToken', value: _token);
-      return const StaffSession(
-        name: 'Staff',
-        role: StaffRole.host,
-        branchIds: {},
+      final branchList = await branches();
+      return StaffSession(
+        name: (data['user'] as Map<String, dynamic>)['email']?.toString() ?? 'Staff',
+        role: _role,
+        branchIds: branchList.map((branch) => branch.id).toSet(),
       );
     } catch (e) {
       _fail(e);
@@ -77,13 +90,19 @@ class ApiRestaurantRepository implements RestaurantRepository {
         '/api/v1/restaurant/me/branches',
         options: _auth,
       );
-      return (r.data['data'] as List)
+      final rows = r.data['data'] as List;
+      if (rows.isNotEmpty) {
+        _role = StaffRole.values.byName(
+          (rows.first as Map<String, dynamic>)['role'].toString().toLowerCase(),
+        );
+      }
+      return rows
           .map(
             (e) => Branch(
               id: e['branchId'],
               restaurantName: e['restaurantName'],
               name: e['branchName'],
-              active: e['status'] == 'ACTIVE',
+              active: e['status'].toString().toLowerCase() == 'active',
             ),
           )
           .toList();

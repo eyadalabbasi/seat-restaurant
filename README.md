@@ -19,6 +19,12 @@ For the isolated fixture preview:
 
 ```sh
 flutter run --flavor dev --dart-define=APP_ENV=dev --dart-define=ENABLE_DEV_FIXTURES=true
+
+Staging, with fixtures disabled:
+
+```bash
+flutter run --flavor dev --dart-define-from-file=dart_defines/staging.json
+```
 ```
 
 Fixture OTP: `123456`. Phone suffixes select roles: `1111` OWNER, `2222` MANAGER, `3333` HOST, and `4444` VIEWER.
