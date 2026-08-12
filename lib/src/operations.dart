@@ -74,7 +74,9 @@ class ApiRestaurantRepository implements RestaurantRepository {
       await _storage.write(key: 'accessToken', value: _token);
       final branchList = await branches();
       return StaffSession(
-        name: (data['user'] as Map<String, dynamic>)['email']?.toString() ?? 'Staff',
+        name:
+            (data['user'] as Map<String, dynamic>)['email']?.toString() ??
+            'Staff',
         role: _role,
         branchIds: branchList.map((branch) => branch.id).toSet(),
       );
@@ -100,8 +102,11 @@ class ApiRestaurantRepository implements RestaurantRepository {
           .map(
             (e) => Branch(
               id: e['branchId'],
-              restaurantName: e['restaurantName'],
-              name: e['branchName'],
+              restaurantName:
+                  e['restaurantName'] ??
+                  e['restaurantNameEn'] ??
+                  e['restaurantNameAr'],
+              name: e['branchName'] ?? e['branchNameEn'] ?? e['branchNameAr'],
               active: e['status'].toString().toLowerCase() == 'active',
             ),
           )
