@@ -82,17 +82,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: SeatColors.primaryText,
     body: Center(
-      child: Text(
-        'SEAT\nRESTAURANT',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: SeatColors.accent,
-          fontSize: 34,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 5,
-          height: 1.5,
+      child: Semantics(
+        label: 'SEAT Restaurant',
+        child: Image.asset(
+          'assets/branding/seat-mark-transparent.png',
+          width: 180,
+          height: 180,
         ),
       ),
     ),
