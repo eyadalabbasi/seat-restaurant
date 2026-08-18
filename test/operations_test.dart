@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:io';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:seat_restaurant/src/app.dart';
 import 'package:seat_restaurant/src/config.dart';
@@ -8,6 +9,12 @@ import 'package:seat_restaurant/src/models.dart';
 import 'package:seat_restaurant/src/operations.dart';
 
 void main() {
+  test('release manifest permits staging HTTPS traffic', () {
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
+    expect(manifest, contains('android.permission.INTERNET'));
+  });
   late FixtureRestaurantRepository repository;
   setUpAll(initializeDateFormatting);
   setUp(() => repository = FixtureRestaurantRepository());
